@@ -75,8 +75,8 @@ public class BornDigitalModsPlugin implements DigitalObjectPlugin, HasMetadataHa
                 this,
                 EnumSet.of(DatastreamEditorType.MODS, DatastreamEditorType.NOTE,
                         DatastreamEditorType.PARENT, DatastreamEditorType.CHILDREN,
-                        DatastreamEditorType.OCR, DatastreamEditorType.MEDIA,
-                        DatastreamEditorType.ATM)
+                        DatastreamEditorType.OCR, DatastreamEditorType.ALTO,
+                        DatastreamEditorType.MEDIA, DatastreamEditorType.ATM)
                 ));
         return models;
     }

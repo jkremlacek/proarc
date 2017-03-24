@@ -84,6 +84,7 @@ public final class DigitalObjectManager {
     private DataStreamExportAction rawDataStreamExportAction;
     private DeleteAction deleteAction;
     private DigitalObjectEditAction ocrEditAction;
+    private DigitalObjectEditAction altoEditAction;
     private DigitalObjectEditAction noteEditAction;
     private DigitalObjectEditAction modsEditAction;
     private DigitalObjectEditAction parentEditAction;
@@ -207,6 +208,8 @@ public final class DigitalObjectManager {
                 DigitalObjectDataSource.createDeleteOptionsForm(), i18n);
         ocrEditAction = new DigitalObjectEditAction(
                 i18n.ImportBatchItemEditor_TabOcr_Title(), DatastreamEditorType.OCR, i18n);
+        altoEditAction = new DigitalObjectEditAction(
+                i18n.ImportBatchItemEditor_TabAlto_Title(), DatastreamEditorType.ALTO, i18n);
         noteEditAction = new DigitalObjectEditAction(
                 i18n.ImportBatchItemEditor_TabNote_Title(),
                 i18n.ImportBatchItemEditor_TabNote_Hint(),
@@ -276,6 +279,7 @@ public final class DigitalObjectManager {
         toolbar.addMember(Actions.asIconButton(parentEditAction, actionSource));
         toolbar.addMember(Actions.asIconButton(mediaEditAction, actionSource));
         toolbar.addMember(Actions.asIconButton(ocrEditAction, actionSource));
+        toolbar.addMember(Actions.asIconButton(altoEditAction, actionSource));
         toolbar.addMember(Actions.asIconButton(childrenEditAction, actionSource));
         toolbar.addMember(Actions.asIconButton(atmEditAction, actionSource));
         toolbar.addSeparator();
@@ -293,6 +297,7 @@ public final class DigitalObjectManager {
         menu.addItem(Actions.asMenuItem(parentEditAction, actionSource, false));
         menu.addItem(Actions.asMenuItem(mediaEditAction, actionSource, false));
         menu.addItem(Actions.asMenuItem(ocrEditAction, actionSource, false));
+        menu.addItem(Actions.asMenuItem(altoEditAction, actionSource, false));
         menu.addItem(Actions.asMenuItem(childrenEditAction, actionSource, false));
         menu.addItem(Actions.asMenuItem(atmEditAction, actionSource, false));
         menu.addItem(new MenuItemSeparator());

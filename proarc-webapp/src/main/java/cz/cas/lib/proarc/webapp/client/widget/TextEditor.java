@@ -60,6 +60,9 @@ public final class TextEditor implements DatastreamEditor, Refreshable, Selectab
         return new TextEditor(i18n, TextDataSource.getOcr());
     }
 
+    public static TextEditor alto(ClientMessages i18n) {
+        return new TextEditor(i18n, TextDataSource.getAlto());}
+
     public static TextEditor note(ClientMessages i18n) {
         return new TextEditor(i18n, TextDataSource.getNote());
     }

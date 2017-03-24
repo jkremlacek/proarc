@@ -128,6 +128,7 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
  *      /object/{pid}/preview
  *      /object/{pid}/thumb
  *      /object/{pid}/ocr
+ *      /object/{pid}/alto
  *      /object/{pid}/metadata
  *      /object/{pid}/relations
  *      /object/metamodel/ GET - lists model:{pid, displayname, type:(TOP|LEAF)}
@@ -1200,6 +1201,51 @@ public class DigitalObjectResource {
             ocrEditor.write(content, timestamp, session.asFedoraLog());
             fobject.flush();
             StringRecord result = ocrEditor.readRecord();
+            result.setBatchId(batchId);
+            return result;
+        } catch (DigitalObjectNotFoundException ex) {
+            throw RestException.plainNotFound(DigitalObjectResourceApi.DIGITALOBJECT_PID, pid);
+        }
+    }
+
+    @GET
+    @Path(DigitalObjectResourceApi.ALTO_PATH)
+    @Produces(MediaType.APPLICATION_JSON)
+    public StringRecord getAlto(
+            @QueryParam(DigitalObjectResourceApi.DIGITALOBJECT_PID) String pid,
+            @QueryParam(DigitalObjectResourceApi.BATCHID_PARAM) Integer batchId
+    ) throws IOException, DigitalObjectException {
+
+        FedoraObject fobject = findFedoraObject(pid, batchId);
+        StringEditor altoEditor = StringEditor.alto(fobject);
+        try {
+            StringRecord alto = altoEditor.readRecord();
+            alto.setBatchId(batchId);
+            return alto;
+        } catch (DigitalObjectNotFoundException ex) {
+            throw RestException.plainNotFound(DigitalObjectResourceApi.DIGITALOBJECT_PID, pid);
+        }
+    }
+
+    @PUT
+    @Path(DigitalObjectResourceApi.ALTO_PATH)
+    @Produces(MediaType.APPLICATION_JSON)
+    public StringRecord updateAlto(
+            @FormParam(DigitalObjectResourceApi.DIGITALOBJECT_PID) String pid,
+            @FormParam(DigitalObjectResourceApi.BATCHID_PARAM) Integer batchId,
+            @FormParam(DigitalObjectResourceApi.TIMESTAMP_PARAM) Long timestamp,
+            @FormParam(DigitalObjectResourceApi.STRINGRECORD_CONTENT) String content
+    ) throws IOException, DigitalObjectException {
+
+        if (timestamp == null) {
+            throw RestException.plainText(Status.BAD_REQUEST, "Missing timestamp!");
+        }
+        FedoraObject fobject = findFedoraObject(pid, batchId, false);
+        StringEditor altoEditor = StringEditor.alto(fobject);
+        try {
+            altoEditor.write(content, timestamp, session.asFedoraLog());
+            fobject.flush();
+            StringRecord result = altoEditor.readRecord();
             result.setBatchId(batchId);
             return result;
         } catch (DigitalObjectNotFoundException ex) {

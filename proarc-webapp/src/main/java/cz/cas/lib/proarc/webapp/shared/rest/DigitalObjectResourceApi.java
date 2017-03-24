@@ -137,6 +137,9 @@ public final class DigitalObjectResourceApi {
     /** Resource /object/ocr */
     public static final String OCR_PATH = "ocr";
 
+    /** Resource /object/alto */
+    public static final String ALTO_PATH = "alto";
+
     /** Resource /object/preview */
     public static final String PREVIEW_PATH = "preview";
 

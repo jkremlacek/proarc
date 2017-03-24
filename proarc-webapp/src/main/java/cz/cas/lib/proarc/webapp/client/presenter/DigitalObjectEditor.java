@@ -411,6 +411,11 @@ public final class DigitalObjectEditor implements Refreshable, Selectable<Record
                 i18n.DigitalObjectEditAction_Hint(),
                 null,
                 DatastreamEditorType.OCR, places);
+        DigitalObjectEditAction altoEditAction = new DigitalObjectEditAction(
+                i18n.ImportBatchItemEditor_TabAlto_Title(),
+                i18n.DigitalObjectEditAction_Hint(),
+                null,
+                DatastreamEditorType.ALTO, places);
         DigitalObjectEditAction noteEditAction = new DigitalObjectEditAction(
                 i18n.ImportBatchItemEditor_TabNote_Title(),
                 i18n.ImportBatchItemEditor_TabNote_Hint(),
@@ -459,6 +464,7 @@ public final class DigitalObjectEditor implements Refreshable, Selectable<Record
                 menu.addItem(Actions.asMenuItem(mediaEditAction, source, false));
             }
             menu.addItem(Actions.asMenuItem(ocrEditAction, source, false));
+            menu.addItem(Actions.asMenuItem(altoEditAction, source, false));
             menu.addItem(Actions.asMenuItem(atmEditAction, source, false));
             actionsMenu.setMenu(menu);
         } else {
@@ -472,6 +478,7 @@ public final class DigitalObjectEditor implements Refreshable, Selectable<Record
             menuEditors.addItem(Actions.asMenuItem(parentEditAction, source, false));
             menuEditors.addItem(Actions.asMenuItem(mediaEditAction, source, false));
             menuEditors.addItem(Actions.asMenuItem(ocrEditAction, source, false));
+            menuEditors.addItem(Actions.asMenuItem(altoEditAction, source, false));
             menuEditors.addItem(Actions.asMenuItem(childrenEditAction, source, false));
             menuEditors.addItem(Actions.asMenuItem(atmEditAction, source, false));
             btnEditors.setMenu(menuEditors);
@@ -543,6 +550,10 @@ public final class DigitalObjectEditor implements Refreshable, Selectable<Record
             case OCR:
                 title = i18n.ImportBatchItemEditor_TabOcr_Title();
                 deditor = TextEditor.ocr(i18n);
+                break;
+            case ALTO:
+                title = i18n.ImportBatchItemEditor_TabAlto_Title();
+                deditor = TextEditor.alto(i18n);
                 break;
             case NOTE:
                 title = i18n.ImportBatchItemEditor_TabNote_Title();

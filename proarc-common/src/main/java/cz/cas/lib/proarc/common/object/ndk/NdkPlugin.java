@@ -140,8 +140,8 @@ public class NdkPlugin implements DigitalObjectPlugin, HasMetadataHandler<ModsDe
                 this,
                 EnumSet.of(DatastreamEditorType.MODS, DatastreamEditorType.NOTE,
                         DatastreamEditorType.PARENT, DatastreamEditorType.CHILDREN,
-                        DatastreamEditorType.OCR, DatastreamEditorType.MEDIA,
-                        DatastreamEditorType.ATM)
+                        DatastreamEditorType.OCR, DatastreamEditorType.ALTO,
+                        DatastreamEditorType.MEDIA, DatastreamEditorType.ATM)
                 ));
         models.add(new MetaModel(
                 MODEL_PICTURE, null, null,
@@ -151,8 +151,8 @@ public class NdkPlugin implements DigitalObjectPlugin, HasMetadataHandler<ModsDe
                 this,
                 EnumSet.of(DatastreamEditorType.MODS, DatastreamEditorType.NOTE,
                         DatastreamEditorType.PARENT, DatastreamEditorType.CHILDREN,
-                        DatastreamEditorType.OCR, DatastreamEditorType.MEDIA,
-                        DatastreamEditorType.ATM)
+                        DatastreamEditorType.OCR, DatastreamEditorType.ALTO,
+                        DatastreamEditorType.MEDIA, DatastreamEditorType.ATM)
                 ));
         models.add(new MetaModel(
                 MODEL_MONOGRAPHTITLE, true, null,

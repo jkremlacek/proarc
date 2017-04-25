@@ -34,24 +34,9 @@ import cz.cas.lib.proarc.common.object.model.DatastreamEditorType;
 import cz.cas.lib.proarc.webapp.client.ClientMessages;
 import cz.cas.lib.proarc.webapp.client.ClientUtils;
 import cz.cas.lib.proarc.webapp.client.Editor;
-import cz.cas.lib.proarc.webapp.client.action.AbstractAction;
-import cz.cas.lib.proarc.webapp.client.action.ActionEvent;
-import cz.cas.lib.proarc.webapp.client.action.Actions;
+import cz.cas.lib.proarc.webapp.client.action.*;
 import cz.cas.lib.proarc.webapp.client.action.Actions.ActionSource;
-import cz.cas.lib.proarc.webapp.client.action.ArchiveExportAction;
-import cz.cas.lib.proarc.webapp.client.action.CejshExportAction;
-import cz.cas.lib.proarc.webapp.client.action.CrossrefExportAction;
-import cz.cas.lib.proarc.webapp.client.action.DataStreamExportAction;
-import cz.cas.lib.proarc.webapp.client.action.DeleteAction;
-import cz.cas.lib.proarc.webapp.client.action.DesaExportAction;
-import cz.cas.lib.proarc.webapp.client.action.DigitalObjectEditAction;
-import cz.cas.lib.proarc.webapp.client.action.FoxmlViewAction;
-import cz.cas.lib.proarc.webapp.client.action.KrameriusExportAction;
-import cz.cas.lib.proarc.webapp.client.action.NdkExportAction;
-import cz.cas.lib.proarc.webapp.client.action.RefreshAction;
 import cz.cas.lib.proarc.webapp.client.action.RefreshAction.Refreshable;
-import cz.cas.lib.proarc.webapp.client.action.TreeExpandAction;
-import cz.cas.lib.proarc.webapp.client.action.UrnNbnAction;
 import cz.cas.lib.proarc.webapp.client.ds.DigitalObjectDataSource;
 import cz.cas.lib.proarc.webapp.client.ds.MetaModelDataSource;
 import cz.cas.lib.proarc.webapp.client.ds.RelationDataSource;
@@ -82,6 +67,7 @@ public final class DigitalObjectManager {
     private DesaExportAction desaExportAction;
     private DataStreamExportAction fullDataStreamExportAction;
     private DataStreamExportAction rawDataStreamExportAction;
+    private DataStreamExportAction ndkUserDataStreamExportAction;
     private DeleteAction deleteAction;
     private DigitalObjectEditAction ocrEditAction;
     private DigitalObjectEditAction noteEditAction;
@@ -203,6 +189,7 @@ public final class DigitalObjectManager {
         desaDownloadAction = DesaExportAction.download(i18n);
         fullDataStreamExportAction = DataStreamExportAction.full(i18n);
         rawDataStreamExportAction = DataStreamExportAction.raw(i18n);
+        ndkUserDataStreamExportAction = DataStreamExportAction.ndkUser(i18n);
         deleteAction = new DeleteAction(DigitalObjectDataSource.createDeletable(),
                 DigitalObjectDataSource.createDeleteOptionsForm(), i18n);
         ocrEditAction = new DigitalObjectEditAction(
@@ -266,6 +253,7 @@ public final class DigitalObjectManager {
         menuExport.addItem(Actions.asMenuItem(desaDownloadAction, actionSource, false));
         menuExport.addItem(Actions.asMenuItem(fullDataStreamExportAction, actionSource, false));
         menuExport.addItem(Actions.asMenuItem(rawDataStreamExportAction, actionSource, false));
+        menuExport.addItem(Actions.asMenuItem(ndkUserDataStreamExportAction, actionSource, false));
         btnExport.setMenu(menuExport);
 
         toolbar.addMember(Actions.asIconButton(new RefreshAction(i18n),
@@ -307,6 +295,7 @@ public final class DigitalObjectManager {
         menu.addItem(Actions.asMenuItem(desaDownloadAction, actionSource, false));
         menu.addItem(Actions.asMenuItem(fullDataStreamExportAction, actionSource, false));
         menu.addItem(Actions.asMenuItem(rawDataStreamExportAction, actionSource, false));
+        menu.addItem(Actions.asMenuItem(ndkUserDataStreamExportAction, actionSource, false));
         menu.addItem(new MenuItemSeparator());
         menu.addItem(Actions.asMenuItem(deleteAction, actionSource, true));
         menu.addItem(Actions.asMenuItem(registerUrnNbnAction, actionSource, true));

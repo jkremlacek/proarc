@@ -17,17 +17,9 @@
 package cz.cas.lib.proarc.common.fedora;
 
 import com.yourmediashelf.fedora.generated.management.DatastreamProfile;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
+
 import javax.ws.rs.core.MediaType;
+import java.io.*;
 
 /**
  * Supports plaint text as Fedora data stream binary content.
@@ -42,6 +34,8 @@ public final class StringEditor {
     public static final String OCR_LABEL = "OCR for this object";
     public static final String PRIVATE_NOTE_ID = "PRIVATE_NOTE";
     public static final String PRIVATE_NOTE_LABEL = "Private note for this object";
+
+    public static final String OCR_ALTO_GEN_ID = "OCR_ALTO_GEN";
 
     private final XmlStreamEditor editor;
     private final FedoraObject object;

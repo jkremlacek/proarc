@@ -22,13 +22,14 @@ import cz.cas.lib.proarc.common.fedora.DigitalObjectException;
 import cz.cas.lib.proarc.common.fedora.FedoraObject;
 import cz.cas.lib.proarc.common.fedora.FoxmlUtils;
 import cz.cas.lib.proarc.common.fedora.XmlStreamEditor;
-import java.io.IOException;
-import java.net.URI;
+import org.xml.sax.SAXException;
+
 import javax.xml.XMLConstants;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
-import org.xml.sax.SAXException;
+import java.io.IOException;
+import java.net.URI;
 
 /**
  * ALTO data stream.

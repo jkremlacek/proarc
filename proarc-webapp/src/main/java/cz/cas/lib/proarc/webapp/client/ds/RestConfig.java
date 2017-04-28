@@ -101,6 +101,8 @@ public final class RestConfig {
             URL_EXPORT, ExportResourceApi.KRAMERIUS4_PATH);
     public static final String URL_EXPORT_NDK = path(
             URL_EXPORT, ExportResourceApi.NDK_PATH);
+    public static final String URL_EXPORT_KWIS = path(
+            URL_EXPORT, ExportResourceApi.KWIS_PATH);
     public static final String URL_DEVICE = path(URL_ROOT, DeviceResourceApi.PATH);
     public static final String URL_VALUEMAP = path(URL_ROOT, ValueMapResourceApi.PATH);
     public static final String URL_CONFIGPROFILE = path(URL_ROOT, ConfigurationProfileResourceApi.PATH);

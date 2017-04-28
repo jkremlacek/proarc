@@ -72,4 +72,7 @@ public final class ExportDataSource extends RestDataSource {
         return new ExportDataSource(RestConfig.URL_EXPORT_NDK);
     }
 
+    public static ExportDataSource getKWIS() {
+        return new ExportDataSource(RestConfig.URL_EXPORT_KWIS);
+    }
 }

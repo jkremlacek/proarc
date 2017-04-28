@@ -19,14 +19,9 @@ package cz.cas.lib.proarc.webapp.server.rest;
 import cz.cas.lib.proarc.common.config.AppConfiguration;
 import cz.cas.lib.proarc.common.config.AppConfigurationException;
 import cz.cas.lib.proarc.common.config.AppConfigurationFactory;
-import cz.cas.lib.proarc.common.export.DataStreamExport;
-import cz.cas.lib.proarc.common.export.DesaExport;
+import cz.cas.lib.proarc.common.export.*;
 import cz.cas.lib.proarc.common.export.DesaExport.Result;
-import cz.cas.lib.proarc.common.export.ExportException;
-import cz.cas.lib.proarc.common.export.ExportResultLog;
 import cz.cas.lib.proarc.common.export.ExportResultLog.ResultError;
-import cz.cas.lib.proarc.common.export.Kramerius4Export;
-import cz.cas.lib.proarc.common.export.NdkExport;
 import cz.cas.lib.proarc.common.export.archive.ArchiveProducer;
 import cz.cas.lib.proarc.common.export.cejsh.CejshConfig;
 import cz.cas.lib.proarc.common.export.cejsh.CejshExport;
@@ -38,24 +33,11 @@ import cz.cas.lib.proarc.common.object.DigitalObjectManager;
 import cz.cas.lib.proarc.common.object.model.MetaModelRepository;
 import cz.cas.lib.proarc.common.user.UserProfile;
 import cz.cas.lib.proarc.webapp.shared.rest.ExportResourceApi;
-import java.io.Closeable;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.commons.io.FileUtils;
+import org.glassfish.jersey.server.CloseableService;
+
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -65,8 +47,13 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.apache.commons.io.FileUtils;
-import org.glassfish.jersey.server.CloseableService;
+import java.io.*;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * REST resource to export data from the system.
@@ -99,17 +86,7 @@ public class ExportResource {
             @FormParam(ExportResourceApi.DATASTREAM_HIERARCHY_PARAM) @DefaultValue("true") boolean hierarchy
             ) throws IOException, ExportException {
 
-        if (pids.isEmpty()) {
-            throw RestException.plainText(Status.BAD_REQUEST, "Missing " + ExportResourceApi.DATASTREAM_PID_PARAM);
-        }
-        if (dsIds.isEmpty()) {
-            throw RestException.plainText(Status.BAD_REQUEST, "Missing " + ExportResourceApi.DATASTREAM_DSID_PARAM);
-        }
-        DataStreamExport export = new DataStreamExport(RemoteStorage.getInstance(appConfig));
-        URI exportUri = user.getExportFolder();
-        File exportFolder = new File(exportUri);
-        File target = export.export(exportFolder, hierarchy, pids, dsIds);
-        URI targetPath = user.getUserHomeUri().relativize(target.toURI());
+        URI targetPath = runDatastreamExport(pids, dsIds, hierarchy);
         return new SmartGwtResponse<ExportResult>(new ExportResult(targetPath));
     }
 
@@ -121,16 +98,43 @@ public class ExportResource {
             @FormParam(ExportResourceApi.KRAMERIUS4_HIERARCHY_PARAM) @DefaultValue("true") boolean hierarchy
             ) throws IOException {
 
+        URI targetPath = runK4Export(pids, hierarchy);
+        return new SmartGwtResponse<ExportResult>(new ExportResult(targetPath));
+    }
+
+    @POST
+    @Path(ExportResourceApi.KWIS_PATH)
+    @Produces({MediaType.APPLICATION_JSON})
+    public SmartGwtResponse<ExportResult> kwis(
+            @FormParam(ExportResourceApi.KWIS_PID_PARAM) List<String> pids,
+            @FormParam(ExportResourceApi.KWIS_HIERARCHY_PARAM) @DefaultValue("true") boolean hierarchy
+    ) throws IOException, ExportException {
         if (pids.isEmpty()) {
             throw RestException.plainText(Status.BAD_REQUEST, "Missing " + ExportResourceApi.KRAMERIUS4_PID_PARAM);
         }
-        Kramerius4Export export = new Kramerius4Export(
-                RemoteStorage.getInstance(appConfig), appConfig.getKramerius4Export());
-        URI exportUri = user.getExportFolder();
-        File exportFolder = new File(exportUri);
-        File target = export.export(exportFolder, hierarchy, session.asFedoraLog(), pids.toArray(new String[pids.size()]));
-        URI targetPath = user.getUserHomeUri().relativize(target.toURI());
-        return new SmartGwtResponse<ExportResult>(new ExportResult(targetPath));
+
+        URI imagesPath = runDatastreamExport(pids, Collections.singletonList("NDK_USER"), hierarchy);
+        URI k4Path = runK4Export(pids, hierarchy);
+
+        String outputPath = user.getExportFolder().getPath();
+        String imp = imagesPath.getPath();
+        String k4p = k4Path.getPath();
+        String exportPackPath = outputPath + pids.get(0).substring(5) + "_KWIS";
+
+        new File(exportPackPath).mkdir();
+
+        imp = outputPath + imp.substring(imp.indexOf('/') + 1);
+        k4p = outputPath + k4p.substring(k4p.indexOf('/') + 1);
+
+        KWISExport export = new KWISExport(
+                appConfig,
+                imp,
+                k4p,
+                exportPackPath);
+
+        export.run();
+
+        return new SmartGwtResponse<ExportResult>(new ExportResult(URI.create(exportPackPath)));
     }
 
     /**
@@ -501,4 +505,35 @@ public class ExportResource {
 
     }
 
+    private URI runK4Export(
+            List<String> pids,
+            boolean hierarchy) throws IOException {
+        if (pids.isEmpty()) {
+            throw RestException.plainText(Status.BAD_REQUEST, "Missing " + ExportResourceApi.KRAMERIUS4_PID_PARAM);
+        }
+
+        Kramerius4Export export = new Kramerius4Export(
+                RemoteStorage.getInstance(appConfig), appConfig.getKramerius4Export());
+        URI exportUri = user.getExportFolder();
+        File exportFolder = new File(exportUri);
+        File target = export.export(exportFolder, hierarchy, session.asFedoraLog(), pids.toArray(new String[pids.size()]));
+        return user.getUserHomeUri().relativize(target.toURI());
+    }
+
+    private URI runDatastreamExport(
+            List<String> pids,
+            List<String> dsIds,
+            boolean hierarchy) throws IOException, ExportException {
+        if (pids.isEmpty()) {
+            throw RestException.plainText(Status.BAD_REQUEST, "Missing " + ExportResourceApi.DATASTREAM_PID_PARAM);
+        }
+        if (dsIds.isEmpty()) {
+            throw RestException.plainText(Status.BAD_REQUEST, "Missing " + ExportResourceApi.DATASTREAM_DSID_PARAM);
+        }
+        DataStreamExport export = new DataStreamExport(RemoteStorage.getInstance(appConfig));
+        URI exportUri = user.getExportFolder();
+        File exportFolder = new File(exportUri);
+        File target = export.export(exportFolder, hierarchy, pids, dsIds);
+        return user.getUserHomeUri().relativize(target.toURI());
+    }
 }

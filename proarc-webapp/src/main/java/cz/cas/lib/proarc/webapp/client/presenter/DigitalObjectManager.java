@@ -60,6 +60,7 @@ public final class DigitalObjectManager {
     private FoxmlViewAction foxmlAction;
     private ArchiveExportAction archiveExportAction;
     private KrameriusExportAction krameriusExportAction;
+    private KWISExportAction kwisExportAction;
     private NdkExportAction ndkExportAction;
     private CejshExportAction cejshExportAction;
     private CrossrefExportAction crossrefExportAction;
@@ -182,6 +183,7 @@ public final class DigitalObjectManager {
         archiveExportAction = new ArchiveExportAction(i18n);
         foxmlAction = new FoxmlViewAction(i18n);
         krameriusExportAction = new KrameriusExportAction(i18n);
+        kwisExportAction = new KWISExportAction(i18n);
         ndkExportAction = new NdkExportAction(i18n);
         cejshExportAction = new CejshExportAction(i18n);
         crossrefExportAction = new CrossrefExportAction(i18n);
@@ -254,6 +256,7 @@ public final class DigitalObjectManager {
         menuExport.addItem(Actions.asMenuItem(fullDataStreamExportAction, actionSource, false));
         menuExport.addItem(Actions.asMenuItem(rawDataStreamExportAction, actionSource, false));
         menuExport.addItem(Actions.asMenuItem(ndkUserDataStreamExportAction, actionSource, false));
+        menuExport.addItem(Actions.asMenuItem(kwisExportAction, actionSource, false));
         btnExport.setMenu(menuExport);
 
         toolbar.addMember(Actions.asIconButton(new RefreshAction(i18n),
@@ -296,6 +299,7 @@ public final class DigitalObjectManager {
         menu.addItem(Actions.asMenuItem(fullDataStreamExportAction, actionSource, false));
         menu.addItem(Actions.asMenuItem(rawDataStreamExportAction, actionSource, false));
         menu.addItem(Actions.asMenuItem(ndkUserDataStreamExportAction, actionSource, false));
+        menu.addItem(Actions.asMenuItem(kwisExportAction, actionSource, false));
         menu.addItem(new MenuItemSeparator());
         menu.addItem(Actions.asMenuItem(deleteAction, actionSource, true));
         menu.addItem(Actions.asMenuItem(registerUrnNbnAction, actionSource, true));

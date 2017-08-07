@@ -1,5 +1,4 @@
 before_install:
-        - mkdir /tmp
         - curl -fSL "https://github.com/proarc/proarc/releases/download/v3.2/proarc-3.2-release.zip" -o proarc.zip
         - unzip proarc.zip
         - unzip proarc-3.2-20161121223439/proarc.war

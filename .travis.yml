@@ -1,3 +1,7 @@
+addons:
+  apt:
+    packages:
+      - ghostscript
 before_install:
         - curl -fSL "https://github.com/proarc/proarc/releases/download/v3.2/proarc-3.2-release.zip" -o proarc.zip
         - unzip proarc.zip

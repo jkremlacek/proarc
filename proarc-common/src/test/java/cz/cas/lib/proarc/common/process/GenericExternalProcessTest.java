@@ -65,7 +65,7 @@ public class GenericExternalProcessTest {
 
     @Test
     public void testIMConvert() throws Exception {
-//        temp.setDeleteOnExit(false);
+        temp.setDeleteOnExit(false);
         String imageMagicExec = "/usr/bin/convert";
         Assume.assumeTrue(new File(imageMagicExec).exists());
 

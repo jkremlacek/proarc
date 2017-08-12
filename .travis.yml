@@ -16,5 +16,5 @@ before_install:
         - mvn install:install-file -Dfile=./WEB-INF/lib/djvuframe-0.8.09.jar  -DgroupId=com.foxtrottechnologies -DartifactId=djvuframe -Dversion=0.8.09 -Dpackaging=jar
         - mvn install:install-file -Dfile=./WEB-INF/lib/org.moxieapps.gwt.uploader-1.1.0.jar -DgroupId=org.moxieapps.gwt -DartifactId=org.moxieapps.gwt.uploader -Dversion=1.1.0 -Dpackaging=jar
         - mvn com.isomorphic:isc-maven-plugin:1.1.1:install -Dproduct=SMARTGWT -Dlicense=LGPL -DbuildNumber=6.0p -DbuildDate=2016-10-23
-        - docker pull moravianlibrary/fedora:mulgara
-        - docker run -d -p 127.0.0.1:8080:8080 moravianllibrary/fedora:mulgara
+        - docker pull moravianlibrary/fcrepo:3.8.1-mulgara
+        - docker run -d -p 127.0.0.1:8080:8080 moravianlibrary/fcrepo:3.8.1-mulgara

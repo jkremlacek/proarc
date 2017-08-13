@@ -279,6 +279,7 @@ public class MetsElementVisitor implements IMetsElementVisitor {
                 byte[] digest = md.digest();
                 String result = new String(Hex.encodeHex(digest));
                 metsElement.getMetsContext().getFileList().add(new FileMD5Info("." + File.separator + outputFile.getName(), result, totalBytes));
+                LOG.log(Level.INFO, "TMP RUZNE VELIKOSTI: " + outputFile.getName() + ": " + totalBytes);
                 fileMd5Name = "MD5_" + MetsUtils.removeNonAlpabetChars(metsElement.getMetsContext().getPackageID()) + ".md5";
                 File fileMd5 = new File(metsElement.getMetsContext().getOutputPath() + File.separator + metsElement.getMetsContext().getPackageID() + File.separator + fileMd5Name);
                 OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(fileMd5));

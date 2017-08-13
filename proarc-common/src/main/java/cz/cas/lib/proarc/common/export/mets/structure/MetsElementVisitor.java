@@ -32,6 +32,7 @@ import java.net.URI;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -267,15 +268,17 @@ public class MetsElementVisitor implements IMetsElementVisitor {
                 byte[] bytes = new byte[2048];
                 int numBytes;
                 long totalBytes = 0;
+                LOG.log(Level.INFO, "Ted to zacne...");
                 try {
                     while ((numBytes = is.read(bytes)) != -1) {
                         totalBytes = totalBytes + numBytes;
-
                         md.update(bytes, 0, numBytes);
+                        System.out.print(Arrays.toString(bytes));
                     }
                 } catch (IOException e) {
                     throw new MetsExportException("Unable to generate MD5 hash", false, e);
                 }
+                System.out.println();
                 byte[] digest = md.digest();
                 String result = new String(Hex.encodeHex(digest));
                 metsElement.getMetsContext().getFileList().add(new FileMD5Info("." + File.separator + outputFile.getName(), result, totalBytes));

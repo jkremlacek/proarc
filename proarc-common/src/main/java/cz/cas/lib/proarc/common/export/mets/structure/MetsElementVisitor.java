@@ -271,7 +271,7 @@ public class MetsElementVisitor implements IMetsElementVisitor {
                 int numBytes;
                 long totalBytes = 0;
                 LOG.log(Level.INFO, "Ted to zacne...");
-                IOUtils.toString(is, StandardCharsets.UTF_8);
+                LOG.log(Level.INFO, IOUtils.toString(is, StandardCharsets.UTF_8);
 //                try {
 //                    while ((numBytes = is.read(bytes)) != -1) {
 //                        totalBytes = totalBytes + numBytes;
@@ -282,7 +282,7 @@ public class MetsElementVisitor implements IMetsElementVisitor {
 //                } catch (IOException e) {
 //                    throw new MetsExportException("Unable to generate MD5 hash", false, e);
 //                }
-                totalBytes = 7500;
+                totalBytes = 7700;
                 System.out.println();
                 byte[] digest = md.digest();
                 String result = new String(Hex.encodeHex(digest));

@@ -29,6 +29,7 @@ import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.math.BigInteger;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -60,6 +61,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.io.IOUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -269,15 +271,18 @@ public class MetsElementVisitor implements IMetsElementVisitor {
                 int numBytes;
                 long totalBytes = 0;
                 LOG.log(Level.INFO, "Ted to zacne...");
-                try {
-                    while ((numBytes = is.read(bytes)) != -1) {
-                        totalBytes = totalBytes + numBytes;
-                        md.update(bytes, 0, numBytes);
-                        System.out.print(Arrays.toString(bytes));
-                    }
-                } catch (IOException e) {
-                    throw new MetsExportException("Unable to generate MD5 hash", false, e);
-                }
+                IOUtils.toString(is, StandardCharsets.UTF_8);
+//                try {
+//                    while ((numBytes = is.read(bytes)) != -1) {
+//                        totalBytes = totalBytes + numBytes;
+//
+//                        //md.update(bytes, 0, numBytes);
+//                        System.out.print(Arrays.toString(bytes));
+//                    }
+//                } catch (IOException e) {
+//                    throw new MetsExportException("Unable to generate MD5 hash", false, e);
+//                }
+                totalBytes = 7500;
                 System.out.println();
                 byte[] digest = md.digest();
                 String result = new String(Hex.encodeHex(digest));

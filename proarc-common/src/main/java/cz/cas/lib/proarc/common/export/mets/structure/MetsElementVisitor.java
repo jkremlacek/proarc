@@ -271,7 +271,7 @@ public class MetsElementVisitor implements IMetsElementVisitor {
                 int numBytes;
                 long totalBytes = 0;
                 LOG.log(Level.INFO, "Ted to zacne...");
-                LOG.log(Level.INFO, IOUtils.toString(is, StandardCharsets.UTF_8);
+                LOG.log(Level.INFO, IOUtils.toString(is, StandardCharsets.UTF_8));
 //                try {
 //                    while ((numBytes = is.read(bytes)) != -1) {
 //                        totalBytes = totalBytes + numBytes;

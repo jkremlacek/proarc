@@ -1,0 +1,44 @@
+sudo: required
+language: java
+services:
+  - docker
+addons:
+  apt:
+    packages:
+      - ghostscript
+before_install:
+  - curl -fSL "https://github.com/proarc/proarc/releases/download/v3.2/proarc-3.2-release.zip" -o proarc.zip
+  - unzip proarc.zip
+  - unzip proarc-3.2-20161121223439/proarc.war
+  - mvn install:install-file -Dfile=./WEB-INF/lib/jai_core-1.1.1_01.jar -DgroupId=javax.media -DartifactId=jai_core -Dversion=1.1.1_01 -Dpackaging=jar
+  - mvn install:install-file -Dfile=./WEB-INF/lib/jai_codec-1.3.1_03.jar  -DgroupId=com.sun.media.jai.codec -DartifactId=jai_codec -Dversion=1.3.1_03 -Dpackaging=jar
+  - mvn install:install-file -Dfile=./WEB-INF/lib/jai_imageio-1.1.jar  -DgroupId=com.sun.media -DartifactId=jai_imageio -Dversion=1.1 -Dpackaging=jar
+  - mvn install:install-file -Dfile=./WEB-INF/lib/javadjvu-0.8.09.jar  -DgroupId=com.foxtrottechnologies -DartifactId=javadjvu -Dversion=0.8.09 -Dpackaging=jar
+  - mvn install:install-file -Dfile=./WEB-INF/lib/djvuframe-0.8.09.jar  -DgroupId=com.foxtrottechnologies -DartifactId=djvuframe -Dversion=0.8.09 -Dpackaging=jar
+  - mvn install:install-file -Dfile=./WEB-INF/lib/org.moxieapps.gwt.uploader-1.1.0.jar -DgroupId=org.moxieapps.gwt -DartifactId=org.moxieapps.gwt.uploader -Dversion=1.1.0 -Dpackaging=jar
+  - mvn com.isomorphic:isc-maven-plugin:1.1.1:install -Dproduct=SMARTGWT -Dlicense=LGPL -DbuildNumber=6.0p -DbuildDate=2016-10-23
+before_script:
+  - export TZ=Europe/Prague
+  - docker network create proarc
+  - docker run --name riTriplesPostgres
+    -e POSTGRES_USER=fedoraAdmin
+    -e POSTGRES_PASSWORD=fedoraAdmin
+    -e POSTGRES_DB=fedora3
+    -d --network proarc postgres:9.6
+  - docker run --name fedoraPostgres
+    -e POSTGRES_USER=fedoraAdmin
+    -e POSTGRES_PASSWORD=fedoraAdmin
+    -e POSTGRES_DB=fedora3
+    -d --network proarc postgres:9.6
+  - docker run -p "8080:8080"
+    -e FEDORA_PASSWORD=fedoraAdmin
+    -e "FEDORA_DB_JDBC_URL=jdbc:postgresql://fedoraPostgres:5432/fedora3"
+    -e FEDORA_DB_USER=fedoraAdmin
+    -e FEDORA_DB_PASSWORD=fedoraAdmin
+    -e "RITRIPLES_DB_JDBC_URL=jdbc:postgresql://riTriplesPostgres:5432/riTriples"
+    -e RITRIPLES_DB_USER=fedoraAdmin
+    -e RITRIPLES_DB_PASSWORD=fedoraAdmin
+    -d --network proarc moravianlibrary/fcrepo:3.8.1-mulgara 
+  - sleep 60
+script:
+  - mvn test -B "-Dproarc-common.FedoraTestSupport.url=http://localhost:8080/fedora" -Dproarc-common.FedoraTestSupport.user=fedoraAdmin -Dproarc-common.FedoraTestSupport.passwd=fedoraAdmin

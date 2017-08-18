@@ -25,8 +25,11 @@ import cz.cas.lib.proarc.common.fedora.SearchView.Item;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.transform.stream.StreamSource;
 import static org.junit.Assert.*;
+
 import org.junit.Assume;
 
 /**
@@ -37,6 +40,8 @@ public class FedoraTestSupport {
 
     private FedoraClient client;
     private RemoteStorage storage;
+
+    private static final Logger LOG = Logger.getLogger(FedoraTestSupport.class.getName());
 
     /**
      * Skips unit test in case the fedora is unreachable.
@@ -52,12 +57,14 @@ public class FedoraTestSupport {
         String user = System.getProperty("proarc-common.FedoraTestSupport.user");
         String passwd = System.getProperty("proarc-common.FedoraTestSupport.passwd");
         String url = System.getProperty("proarc-common.FedoraTestSupport.url");
+        LOG.log(Level.INFO, "bla, bla " + user + passwd + url);
         Assume.assumeNotNull(url, user, passwd);
         FedoraClient client = null;
         try {
             client = new FedoraClient(new FedoraCredentials(url, user, passwd));
             client.getServerVersion();
         } catch (Exception ex) {
+            LOG.log(Level.INFO, ex.getMessage());
             Assume.assumeNoException(ex);
         }
         return client;

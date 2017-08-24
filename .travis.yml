@@ -41,5 +41,6 @@ before_script:
     -d --network proarc moravianlibrary/fcrepo:3.8.1-mulgara
   - sleep 60
 script:
-  - mvn -B -Dproarc-common.junit.properties.file=src/test/resources/travis.properties test
+  - echo `curl http://localhost:8080/fedora/describe`
+#  - mvn -B -Dproarc-common.junit.properties.file=src/test/resources/travis.properties test
 

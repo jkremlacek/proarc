@@ -17,6 +17,9 @@
 package cz.cas.lib.proarc.webapp.client.widget;
 
 import com.smartgwt.client.data.Criteria;
+import com.smartgwt.client.data.DSCallback;
+import com.smartgwt.client.data.DSRequest;
+import com.smartgwt.client.data.DSResponse;
 import com.smartgwt.client.data.Record;
 import com.smartgwt.client.data.ResultSet;
 import com.smartgwt.client.data.SortSpecifier;
@@ -266,6 +269,7 @@ public final class MediaEditor implements DatastreamEditor, Refreshable {
                     d.destroy();
 
                     removeDS();
+                    refresh();
                 });
                 d.addNoButton(new Dialog.DialogCloseHandler() {
                     @Override
@@ -295,14 +299,29 @@ public final class MediaEditor implements DatastreamEditor, Refreshable {
 
         Record query = new Record();
         query.setAttribute(MediaDataSource.OBJECT_PID, pid);
+        query.setAttribute(MediaDataSource.BATCH_ID, batchId);
         query.setAttribute(MediaDataSource.DATASTREAM_ID, "RAW");
 
-        new MediaDataSource().removeData(query);
+        BooleanCallback call = new BooleanCallback() {
+            @Override
+            public void execute(Boolean value) {
+            }
+        };
 
-//        MediaDataSource.getRaw().removeData(query);
-//        MediaDataSource.getPreview().removeData(query);
+        DSRequest dsRequest = new DSRequest();
+        dsRequest.setData(query); // prevents removeData to drop other than primary key attributes
 
-        //refresh();
+        MediaDataSource.getInstance().removeData(query, new DSCallback() {
+
+            @Override
+            public void execute(DSResponse response, Object rawData, DSRequest request) {
+                if (!RestConfig.isStatusOk(response)) {
+                    call.execute(false);
+                    return;
+                }
+                call.execute(true);
+            }
+        }, dsRequest);
     }
 
     private DynamicForm createStreamMenu() {

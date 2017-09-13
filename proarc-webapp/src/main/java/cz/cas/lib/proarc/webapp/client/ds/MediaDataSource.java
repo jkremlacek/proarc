@@ -17,8 +17,10 @@
 
 package cz.cas.lib.proarc.webapp.client.ds;
 
+import com.smartgwt.client.data.DataSource;
 import com.smartgwt.client.data.DataSourceField;
 import com.smartgwt.client.data.RestDataSource;
+import com.smartgwt.client.types.CriteriaPolicy;
 import com.smartgwt.client.types.DSDataFormat;
 import com.smartgwt.client.types.FieldType;
 import cz.cas.lib.proarc.webapp.shared.rest.DigitalObjectResourceApi;
@@ -32,7 +34,11 @@ public class MediaDataSource extends RestDataSource {
 
     public static final String OBJECT_PID = DigitalObjectResourceApi.DIGITALOBJECT_PID;
     public static final String DATASTREAM_ID = DigitalObjectResourceApi.DISSEMINATION_DATASTREAM;
+    public static final String BATCH_ID = DigitalObjectResourceApi.BATCHID_PARAM;
+
     public static final String ID = "MediaDataSource";
+
+    private static MediaDataSource INSTANCE;
 
     public MediaDataSource() {
         setID(ID);
@@ -46,12 +52,23 @@ public class MediaDataSource extends RestDataSource {
         objectPidDSF.setRequired(true);
 
         DataSourceField datastreamIdDSF = new DataSourceField(DATASTREAM_ID, FieldType.TEXT);
+        DataSourceField batchIdDSF = new DataSourceField(BATCH_ID, FieldType.TEXT);
 
-        setFields(objectPidDSF, datastreamIdDSF);
-
+        setFields(objectPidDSF, batchIdDSF, datastreamIdDSF);
         setTitleField(OBJECT_PID);
 
         setOperationBindings(RestConfig.createDeleteOperation());
         setRequestProperties(RestConfig.createRestRequest(getDataFormat()));
+
+        setCriteriaPolicy(CriteriaPolicy.DROPONCHANGE);
+    }
+
+    public static MediaDataSource getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = (MediaDataSource) DataSource.get(ID);
+            // DataSource.get does not work reliably
+            INSTANCE = INSTANCE != null ? INSTANCE : new MediaDataSource();
+        }
+        return INSTANCE;
     }
 }

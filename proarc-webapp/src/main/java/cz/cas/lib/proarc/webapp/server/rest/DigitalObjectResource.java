@@ -1030,40 +1030,6 @@ public class DigitalObjectResource {
     }
 
     /**
-     * removes RAW datastream from selected pids
-     *
-     * @see PurgeFedoraObject
-     */
-    @DELETE
-    @Path(DigitalObjectResourceApi.RAW_PATH)
-    @Produces({MediaType.APPLICATION_JSON})
-    public SmartGwtResponse<DigitalObject> deleteRawDatastream(
-            @QueryParam(DigitalObjectResourceApi.DELETE_PID_PARAM) String pid
-    ) throws IOException, PurgeException {
-
-        deleteDatastream(pid, BinaryEditor.RAW_ID);
-
-        return new SmartGwtResponse<DigitalObject>(new DigitalObject(pid, null));
-    }
-
-    /**
-     * removes Preview datastream from selected pids
-     *
-     * @see PurgeFedoraObject
-     */
-    @DELETE
-    @Path(DigitalObjectResourceApi.PREVIEW_PATH)
-    @Produces({MediaType.APPLICATION_JSON})
-    public SmartGwtResponse<DigitalObject> deletePreviewDatastream(
-            @QueryParam(DigitalObjectResourceApi.DELETE_PID_PARAM) String pid
-    ) throws IOException, PurgeException {
-
-        deleteDatastream(pid, BinaryEditor.PREVIEW_ID);
-
-        return new SmartGwtResponse<DigitalObject>(new DigitalObject(pid, null));
-    }
-
-    /**
      * Gets digital object dissemination.
      *
      * @param pid PID (required)
@@ -1182,16 +1148,24 @@ public class DigitalObjectResource {
     @Produces({MediaType.APPLICATION_JSON})
     public SmartGwtResponse deleteDissemination(
             @QueryParam(DigitalObjectResourceApi.DIGITALOBJECT_PID) String pid,
-            @QueryParam(DigitalObjectResourceApi.BATCHID_PARAM) Integer batchId,
+            @QueryParam(DigitalObjectResourceApi.BATCHID_PARAM) String batchId,
             @QueryParam(DigitalObjectResourceApi.DISSEMINATION_DATASTREAM) String dsId
     ) throws DigitalObjectException, IOException, PurgeException {
 
-        DigitalObjectHandler doHandler = findHandler(pid, batchId);
+        String message = "";
+
+        Integer batchIdInt = null;
+
+        if (!batchId.equals("null")) {
+            batchIdInt = Integer.parseInt(batchId);    
+        }
+
+        DigitalObjectHandler doHandler = findHandler(pid, batchIdInt);
         DisseminationHandler disseminationHandler = doHandler.dissemination(dsId);
 
-        disseminationHandler.deleteDissemination("");
+        disseminationHandler.deleteDissemination(message);
 
-        return new SmartGwtResponse<Map<String,Object>>(Collections.singletonMap("processId", (Object) 0L));
+        return new SmartGwtResponse<String>(message);
     }
 
     @GET

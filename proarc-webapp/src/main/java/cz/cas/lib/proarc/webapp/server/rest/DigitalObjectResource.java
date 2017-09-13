@@ -75,7 +75,6 @@ import cz.cas.lib.proarc.webapp.shared.rest.DigitalObjectResourceApi.SearchType;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -1175,6 +1174,23 @@ public class DigitalObjectResource {
         } finally {
             file.delete();
         }
+        return new SmartGwtResponse<Map<String,Object>>(Collections.singletonMap("processId", (Object) 0L));
+    }
+
+    @DELETE
+    @Path(DigitalObjectResourceApi.DISSEMINATION_PATH)
+    @Produces({MediaType.APPLICATION_JSON})
+    public SmartGwtResponse deleteDissemination(
+            @QueryParam(DigitalObjectResourceApi.DIGITALOBJECT_PID) String pid,
+            @QueryParam(DigitalObjectResourceApi.BATCHID_PARAM) Integer batchId,
+            @QueryParam(DigitalObjectResourceApi.DISSEMINATION_DATASTREAM) String dsId
+    ) throws DigitalObjectException, IOException, PurgeException {
+
+        DigitalObjectHandler doHandler = findHandler(pid, batchId);
+        DisseminationHandler disseminationHandler = doHandler.dissemination(dsId);
+
+        disseminationHandler.deleteDissemination("");
+
         return new SmartGwtResponse<Map<String,Object>>(Collections.singletonMap("processId", (Object) 0L));
     }
 

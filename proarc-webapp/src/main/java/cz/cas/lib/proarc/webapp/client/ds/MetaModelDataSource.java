@@ -33,6 +33,8 @@ import com.smartgwt.client.types.FetchMode;
 import com.smartgwt.client.types.FieldType;
 import com.smartgwt.client.widgets.menu.Menu;
 import com.smartgwt.client.widgets.menu.MenuItem;
+import com.smartgwt.client.widgets.menu.events.ItemClickHandler;
+import cz.cas.lib.proarc.webapp.client.ClientMessages;
 import cz.cas.lib.proarc.webapp.client.ClientUtils;
 import cz.cas.lib.proarc.webapp.shared.rest.DigitalObjectResourceApi;
 import java.util.logging.Logger;
@@ -54,6 +56,8 @@ public class MetaModelDataSource extends RestDataSource {
     public static final String FIELD_METADATA_FORMAT = DigitalObjectResourceApi.METAMODEL_METADATAFORMAT_PARAM;
     public static final String FIELD_EDITOR = DigitalObjectResourceApi.METAMODEL_MODSCUSTOMEDITORID_PARAM;
     public static final String FIELD_DATASTREAM_EDITORS = DigitalObjectResourceApi.METAMODEL_DATASTREAMEDITOR_PARAM;
+
+    public static final String UUID_SET = "UUID_set";
     /**
      * Synthetic field holding {@link MetaModelRecord} instance.
      */
@@ -156,8 +160,8 @@ public class MetaModelDataSource extends RestDataSource {
         return mmr;
     }
 
-    public static Menu createMenu(RecordList modelRecords, boolean includeRoots) {
-        return createMenu(modelRecords.toArray(), includeRoots);
+    public static Menu createMenu(RecordList modelRecords, boolean includeRoots, ClientMessages i18n, ItemClickHandler handler) {
+        return createMenu(modelRecords.toArray(), includeRoots, i18n, handler);
     }
 
     /**
@@ -167,14 +171,28 @@ public class MetaModelDataSource extends RestDataSource {
      * @param includeRoots include root models in menu?
      * @return the menu
      */
-    public static Menu createMenu(Record[] modelRecords, boolean includeRoots) {
+    public static Menu createMenu(Record[] modelRecords, boolean includeRoots, ClientMessages i18n, ItemClickHandler handler) {
         Menu menu = new Menu();
+
+        menu.setCanSelectParentItems(true);
+
         for (int i = 0; i < modelRecords.length; i++) {
             MetaModelRecord mmr = MetaModelRecord.get(modelRecords[i]);
             if (includeRoots || !mmr.isRoot()) {
                 MenuItem menuItem = new MenuItem(mmr.getDisplayName());
                 menuItem.setAttribute(FIELD_PID, mmr.getId());
+                menuItem.setAttribute(UUID_SET, false);
                 menu.addItem(menuItem);
+
+                MenuItem menuItemWithID = new MenuItem(i18n.DigitalObjectEditor_ChildrenEditor_AddAction_WithParams());
+                menuItemWithID.setAttribute(FIELD_PID, mmr.getId());
+                menuItemWithID.setAttribute(UUID_SET, true);
+
+                Menu submenu = new Menu();
+                submenu.setItems(menuItemWithID);
+                submenu.addItemClickHandler(handler);
+
+                menuItem.setSubmenu(submenu);
             }
         }
         return menu;

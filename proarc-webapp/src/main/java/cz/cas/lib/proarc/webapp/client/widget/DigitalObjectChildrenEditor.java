@@ -22,9 +22,11 @@ import com.google.gwt.activity.shared.ActivityMapper;
 import com.google.gwt.core.client.Callback;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.core.shared.GWT;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.place.shared.Place;
 import com.google.gwt.place.shared.PlaceController;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Widget;
@@ -33,15 +35,23 @@ import com.smartgwt.client.data.Criteria;
 import com.smartgwt.client.data.DSCallback;
 import com.smartgwt.client.data.DSRequest;
 import com.smartgwt.client.data.DSResponse;
+import com.smartgwt.client.data.DataSource;
 import com.smartgwt.client.data.Record;
 import com.smartgwt.client.data.RecordList;
 import com.smartgwt.client.data.ResultSet;
 import com.smartgwt.client.data.events.DataChangedEvent;
 import com.smartgwt.client.data.events.DataChangedHandler;
+import com.smartgwt.client.data.fields.DataSourceTextField;
+import com.smartgwt.client.rpc.RPCResponse;
 import com.smartgwt.client.types.DSOperationType;
 import com.smartgwt.client.util.BooleanCallback;
+import com.smartgwt.client.util.SC;
 import com.smartgwt.client.widgets.Canvas;
 import com.smartgwt.client.widgets.IconButton;
+import com.smartgwt.client.widgets.events.ClickEvent;
+import com.smartgwt.client.widgets.form.DynamicForm;
+import com.smartgwt.client.widgets.form.fields.TextItem;
+import com.smartgwt.client.widgets.form.validator.RegExpValidator;
 import com.smartgwt.client.widgets.grid.ListGrid;
 import com.smartgwt.client.widgets.grid.ListGridField;
 import com.smartgwt.client.widgets.grid.ListGridRecord;
@@ -606,26 +616,109 @@ public final class DigitalObjectChildrenEditor implements DatastreamEditor,
     }
 
     private void createAddMenu(ResultSet models) {
-        Menu menuAdd = MetaModelDataSource.createMenu(models, true);
-        addActionButton.setMenu(menuAdd);
-        menuAdd.addItemClickHandler(new ItemClickHandler() {
+        ItemClickHandler handler = new ItemClickHandler() {
 
             @Override
             public void onItemClick(ItemClickEvent event) {
+
                 MetaModelRecord mmr = MetaModelRecord.get(event.getItem());
-                addChild(mmr);
+
+                Boolean uuidSetRequest = new Boolean(event.getItem().getAttribute(MetaModelDataSource.UUID_SET));
+
+                if (uuidSetRequest != null && uuidSetRequest.booleanValue()) {
+                    final Dialog d = new Dialog(i18n.DigitalObjectEditor_ChildrenEditor_AddAction_WithParams_Window_Title());
+
+                    DynamicForm requestForm = createSetParametersForm();
+                    requestForm.clearValues();
+
+                    d.getDialogContentContainer().setMembers(requestForm);
+                    d.addOkButton((ClickEvent eventX) -> {
+
+                        if(!requestForm.validate()) {
+                            return;
+                        }
+
+                        addChild(mmr, requestForm, d);
+                    });
+                    d.addCancelButton(new Dialog.DialogCloseHandler() {
+                        @Override
+                        public void onClose() {
+                            d.destroy();
+                        }
+                    });
+
+                    d.setWidth(400);
+                    d.show();
+                } else {
+                    addChild(mmr);
+                }
             }
-        });
+        };
+
+        Menu menuAdd = MetaModelDataSource.createMenu(models, true, i18n, handler);
+
+        menuAdd.addItemClickHandler(handler);
+
+        addActionButton.setMenu(menuAdd);
+    }
+
+    private DynamicForm createSetParametersForm() {
+        ClientMessages i18n = GWT.create(ClientMessages.class);
+        DynamicForm f = new DynamicForm();
+        f.setAutoHeight();
+
+        TextItem newPid = new TextItem(DigitalObjectDataSource.FIELD_PID);
+
+        newPid.setTitle(i18n.NewDigObject_OptionPid_Title());
+        newPid.setTooltip(i18n.NewDigObject_OptionPid_Hint());
+        newPid.setRequired(true);
+        newPid.setLength(36 + 5);
+        newPid.setWidth((36 + 5) * 8);
+        newPid.setValidators(new RegExpValidator(
+                "uuid:[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}"));
+
+        f.setFields(newPid);
+        f.setAutoFocus(true);
+
+        return f;
     }
 
     private void addChild(MetaModelRecord model) {
+        addChild(model, null, null);
+    }
+
+    private void addChild(MetaModelRecord model, DynamicForm requestForm, Dialog dialog) {
         Record record = new Record();
         record.setAttribute(DigitalObjectDataSource.FIELD_MODEL, model.getId());
+
+        if (requestForm != null) {
+            String pid = requestForm.getValueAsString(DigitalObjectDataSource.FIELD_PID);
+
+            if (pid != null) {
+                record.setAttribute(DigitalObjectDataSource.FIELD_PID, pid);
+            }
+        }
+
         record.setAttribute(RelationDataSource.FIELD_PARENT, digitalObject.getPid());
+
+        DSRequest dsRequest = new DSRequest();
+        dsRequest.setWillHandleError(true);
+
         DigitalObjectDataSource.getInstance().addData(record, new DSCallback() {
 
             @Override
             public void execute(DSResponse response, Object rawData, DSRequest request) {
+                if (response.getStatus() == RPCResponse.STATUS_VALIDATION_ERROR) {
+                    if (requestForm != null) {
+                        Map errors = response.getErrors();
+
+                        requestForm.setErrors(errors, true);
+                        request.setWillHandleError(true);
+
+                        return;
+                    }
+                }
+
                 if (RestConfig.isStatusOk(response)) {
                     Record[] data = response.getData();
                     final Record r = data[0];
@@ -641,9 +734,15 @@ public final class DigitalObjectChildrenEditor implements DatastreamEditor,
                             childrenListGrid.scrollToRow(recordIndex);
                         }
                     });
+
+                    if (dialog != null) {
+                        dialog.destroy();
+                    }
+                } else {
+                    SC.warn("Failed to create digital object!");
                 }
             }
-        });
+        }, dsRequest);
     }
 
     public static final class ChildActivities implements ActivityMapper {

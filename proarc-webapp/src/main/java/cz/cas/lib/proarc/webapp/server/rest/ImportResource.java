@@ -34,6 +34,7 @@ import cz.cas.lib.proarc.common.imports.ImportBatchManager.BatchItemObject;
 import cz.cas.lib.proarc.common.imports.ImportDispatcher;
 import cz.cas.lib.proarc.common.imports.ImportFileScanner;
 import cz.cas.lib.proarc.common.imports.ImportFileScanner.Folder;
+import cz.cas.lib.proarc.common.imports.ImportPostProcess;
 import cz.cas.lib.proarc.common.imports.ImportProcess;
 import cz.cas.lib.proarc.common.imports.ImportProfile;
 import cz.cas.lib.proarc.common.user.UserProfile;
@@ -253,6 +254,10 @@ public class ImportResource {
             // ingest or reingest for INGESTING_FAILED
             batch = new FedoraImport(RemoteStorage.getInstance(appConfig), importManager)
                     .importBatch(batch, user.getUserName(), session.asFedoraLog());
+
+            if (batch.getState() == Batch.State.INGESTED) {
+                new ImportPostProcess(appConfig.getImportConfiguration(), batch, appConfig.getDefaultUsersHome()).run();
+            }
         } else if (state == Batch.State.LOADING_FAILED) {
             Batch.State realState = batch.getState();
             // try to reset import

@@ -57,6 +57,8 @@ public final class ImportProfile {
     public static final String CONVERTOR_JPG_SMALL_PROCESSOR = "import.jpg_small_convertor.processor";
     public static final String CONVERTOR_JPG_LARGE_PROCESSOR = "import.jpg_large_convertor.processor";
     public static final String CONVERTOR_JP2_PROCESSOR = "import.jp2_convertor.processor";
+    public static final String POST_PROCESS_TYPE = "import.postProcess.type";
+    public static final String POST_PROCESS_PATH = "import.postProcess.path";
 
 
     private final Configuration config;
@@ -174,6 +176,14 @@ public final class ImportProfile {
 
     public ScalingMethod getThumbnailScaling() {
         return getJavaScaling(THUMBNAIL_JAVA_SCALING);
+    }
+
+    public ImportPostProcess.ProcessType getPostProcessType() {
+        return ImportPostProcess.ProcessType.valueOf(config.getString(POST_PROCESS_TYPE, "NONE"));
+    }
+
+    public String getPostProcessPath() {
+        return config.getString(POST_PROCESS_PATH, null);
     }
 
     public void checkPreviewScaleParams() throws AppConfigurationException {

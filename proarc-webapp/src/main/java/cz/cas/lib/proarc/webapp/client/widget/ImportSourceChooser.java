@@ -25,6 +25,9 @@ import com.smartgwt.client.data.Record;
 import com.smartgwt.client.data.ResultSet;
 import com.smartgwt.client.types.DSOperationType;
 import com.smartgwt.client.types.SelectionStyle;
+import com.smartgwt.client.util.SC;
+import com.smartgwt.client.util.ValueCallback;
+import com.smartgwt.client.widgets.Dialog;
 import com.smartgwt.client.widgets.IconButton;
 import com.smartgwt.client.widgets.Label;
 import com.smartgwt.client.widgets.form.DynamicForm;
@@ -76,6 +79,8 @@ public final class ImportSourceChooser extends VLayout implements Refreshable {
     private ImportSourceChooserHandler viewHandler;
     private final ClientMessages i18n;
     private IconButton loadButton;
+    private String selectedPaths = "";
+
 
     public ImportSourceChooser(ClientMessages i18n) {
         this.i18n = i18n;
@@ -105,19 +110,41 @@ public final class ImportSourceChooser extends VLayout implements Refreshable {
         treeGrid.setEmptyMessage(i18n.ImportSourceChooser_NoDataOnServer_Title());
         treeGrid.setAlternateRecordStyles(true);
         treeGrid.setSelectionType(SelectionStyle.SINGLE);
-        ListGridPersistance treeGridPersistence = new ListGridPersistance("ImportSourceChooser.directoryList", treeGrid);
-        treeGrid.setViewState(treeGridPersistence.getViewState());
+        //ListGridPersistance treeGridPersistence = new ListGridPersistance("ImportSourceChooser.directoryList", treeGrid);
+        //treeGrid.setViewState(treeGridPersistence.getViewState());
 
         treeGrid.addFolderClickHandler(new FolderClickHandler() {
 
             @Override
             public void onFolderClick(FolderClickEvent event) {
+                selectedPaths = treeGrid.getSelectedPaths();
                 updateOnSelection();
                 // issue 41: open node on single click
                 TreeNode folder = event.getFolder();
                 event.getViewer().getTree().openFolder(folder);
             }
         });
+
+        treeGrid.addDataArrivedHandler((com.smartgwt.client.widgets.tree.events.DataArrivedHandler) dataArrivedEvent ->
+            {
+//                if (selectedPaths.contains("//")) {
+//                    int end = selectedPaths.indexOf("//") + 2;
+//                    int start = selectedPaths.indexOf("/");
+//
+//                    selectedPaths = selectedPaths.substring(0, start) + selectedPaths.substring(end);
+//                }
+
+                Dialog dialog = new Dialog();
+                dialog.setWidth(500);
+
+                SC.askforValue("myTitle", "myQuestion", selectedPaths, new ValueCallback() {
+                    @Override
+                    public void execute(String s) {
+                        treeGrid.setSelectedPaths(s);
+                    }
+                }, dialog);
+
+            });
 
         ToolStrip toolbar = createToolbar();
 
@@ -246,6 +273,8 @@ public final class ImportSourceChooser extends VLayout implements Refreshable {
                 if (profile != null) {
                     criteria.addCriteria(ImportTreeDataSource.FIELD_PROFILE, profile);
                 }
+                selectedPaths = treeGrid.getSelectedPaths();
+
                 treeGrid.setCriteria(criteria);
                 boolean notArchive = !BatchRecord.isArchive(profile);
                 selectScanner.setRequired(notArchive);

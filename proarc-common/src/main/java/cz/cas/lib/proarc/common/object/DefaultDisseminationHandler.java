@@ -114,22 +114,25 @@ public class DefaultDisseminationHandler implements DisseminationHandler {
             //transform jp2 or tiff to jpg
             if (NDK_ARCHIVAL_ID.equals(dsId) || NDK_USER_ID.equals(dsId) || RAW_ID.equals(dsId)) {
                 try {
-                    return Response.ok(convertToBrowserCompatible(entity, dsId), "image/jpeg")
-                            .header("Content-Disposition", "inline; filename=\"" + entity.getName() + ".jpg\"")
-                            .lastModified(lastModification)
-                            .build();
+                    byte[] img = convertToBrowserCompatible(entity, dsId);
+
+                    if (img != null) {
+                        return Response.ok(img, "image/jpeg")
+                                .header("Content-Disposition", "inline; filename=\"" + entity.getName() + ".jpg\"")
+                                .lastModified(lastModification)
+                                .build();
+                    }
                 } catch (Exception e) {
-                    LOG.log(Level.SEVERE,"Converting " + dsId + " to jpg failed.");
-                    return Response.status(Status.INTERNAL_SERVER_ERROR).build();
+                    LOG.log(Level.SEVERE,"Converting " + dsId + " to jpg failed. Error message: " + e.getMessage());
                 }
-            } else {
-                return Response.ok(entity, loader.getProfile().getDsMIME())
-                        .header("Content-Disposition", "inline; filename=\"" + entity.getName() + '"')
-                        .lastModified(lastModification)
+            }
+
+            return Response.ok(entity, loader.getProfile().getDsMIME())
+                    .header("Content-Disposition", "inline; filename=\"" + entity.getName() + '"')
+                    .lastModified(lastModification)
 //                    .cacheControl(null)
 //                    .expires(new Date(2100, 1, 1))
-                        .build();
-            }
+                    .build();
         } else if (fobject instanceof RemoteObject) {
             RemoteObject remote = (RemoteObject) fobject;
             return getResponse(remote, dsId);
@@ -156,30 +159,38 @@ public class DefaultDisseminationHandler implements DisseminationHandler {
         if (NDK_ARCHIVAL_ID.equals(dsId) || NDK_USER_ID.equals(dsId) || RAW_ID.equals(dsId)) {
 
             try {
-                return Response.ok(convertToBrowserCompatible(response.getEntity(InputStream.class), dsId), "image/jpeg")
-                        .header("Content-Disposition", filename + ".jpg")
-                        .build();
+                byte[] img = convertToBrowserCompatible(response.getEntity(InputStream.class), dsId);
+
+                if (img != null) {
+                    return Response.ok(img, "image/jpeg")
+                            .header("Content-Disposition", filename + ".jpg")
+                            .build();
+                }
             } catch (Exception e) {
-                LOG.log(Level.SEVERE,"Converting " + dsId + " to jpg failed.");
-                return Response.status(Status.INTERNAL_SERVER_ERROR).build();
+                LOG.log(Level.SEVERE,"Converting " + dsId + " to jpg failed. Error message: " + e.getMessage());
             }
-        } else {
-            return Response.ok(response.getEntity(InputStream.class), headers.getFirst("Content-Type"))
-                    .header("Content-Disposition", filename)
-                    .build();
         }
+
+        return Response.ok(response.getEntity(InputStream.class), headers.getFirst("Content-Type"))
+                .header("Content-Disposition", filename)
+                .build();
     }
 
     private static byte[] convertToBrowserCompatible(InputStream entity, String dsId) throws IOException, AppConfigurationException {
         File inFile = File.createTempFile(String.valueOf(new Timestamp(System.currentTimeMillis())),".jp2");
+        byte[] bFile = null;
 
-        OutputStream out = new FileOutputStream(inFile);
-        org.apache.commons.io.IOUtils.copy(entity, out);
-        out.close();
+        try {
+            OutputStream out = new FileOutputStream(inFile);
+            org.apache.commons.io.IOUtils.copy(entity, out);
+            out.close();
 
-        byte[] bFile = convertToBrowserCompatible(inFile, dsId);
-
-        inFile.delete();
+            bFile = convertToBrowserCompatible(inFile, dsId);
+        } catch (Exception e) {
+            LOG.log(Level.SEVERE,"Converting " + dsId + " to jpg failed. Error message: " + e.getMessage());
+        } finally {
+            inFile.delete();
+        }
 
         return bFile;
     }
@@ -205,21 +216,26 @@ public class DefaultDisseminationHandler implements DisseminationHandler {
             }
 
             File out = File.createTempFile(String.valueOf(new Timestamp(System.currentTimeMillis())), ".jpg");
+            byte[] bFile = null;
 
-            new TiffToJpgConvert(
-                AppConfigurationFactory.getInstance().defaultInstance().getImportConfiguration().getConvertorTiffToJpgProcessor(),
-                tiff.getFile(),
-                out,
-                500 ,
-                500).run();
+            try {
+                new TiffToJpgConvert(
+                        AppConfigurationFactory.getInstance().defaultInstance().getImportConfiguration().getConvertorTiffToJpgProcessor(),
+                        tiff.getFile(),
+                        out,
+                        500,
+                        500).run();
 
-            if (!RAW_ID.equals(dsId)) {
-                tiff.getFile().delete();
+                if (!RAW_ID.equals(dsId)) {
+                    tiff.getFile().delete();
+                }
+
+                bFile = Files.readAllBytes(out.toPath());
+            } catch (Exception e) {
+                LOG.log(Level.SEVERE,"Converting " + dsId + " to jpg failed. Error message: " + e.getMessage());
+            } finally {
+                out.delete();
             }
-
-            byte[] bFile = Files.readAllBytes(out.toPath());
-
-            out.delete();
 
             return bFile;
         }
